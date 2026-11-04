@@ -11,7 +11,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 from analysis_pipeline import (DATA_PATH, ROOT, OUT, FIG, FEATURES, NUMERIC,
-                               CODE_NAMES, NAMES, raw_data, prepare, split_time)
+                               CODE_NAMES, NAMES, raw_data, prepare, split_time, execute)
 
 st.set_page_config(page_title='Kolkata | Prediksi Hujan XGBoost',page_icon='🌧️',layout='wide',initial_sidebar_state='expanded')
 
@@ -43,9 +43,26 @@ def load_results():
 if not DATA_PATH.exists():
     st.error('Dataset tidak ditemukan. Letakkan CSV pada folder data/ sesuai README.md.')
     st.stop()
-if not (OUT/'model_xgboost.joblib').exists():
-    st.error('Model belum dilatih. Jalankan dahulu: python MochammadMarilLivio_Test1_KlasifikasiXGBoost.py')
-    st.stop()
+# Cloud baru tidak memiliki berkas hasil pelatihan lokal. Bangun saat pertama dijalankan.
+# Tidak mengubah metode XGBoost atau pembagian data asli.
+_required = [
+    OUT / 'model_xgboost.joblib',
+    OUT / 'metrik_evaluasi.json',
+    OUT / 'feature_importance.csv',
+    OUT / 'prediksi_data_uji.csv',
+    OUT / 'korelasi.csv',
+    FIG / '05_confusion_matrix.png',
+    FIG / '06_roc_curve.png',
+    FIG / '08_split_kronologis.png',
+]
+if any(not f.exists() for f in _required):
+    try:
+        with st.spinner('Menyiapkan model XGBoost dan grafik dari dataset ...'):
+            execute()
+    except Exception as exc:
+        st.error('Proses pelatihan otomatis gagal. Periksa detail error berikut.')
+        st.exception(exc)
+        st.stop()
 
 raw,df,train,test=load_data()
 score,importance,holdout=load_results()
