@@ -22,6 +22,9 @@ from xgboost import XGBClassifier
 
 ROOT = Path(__file__).resolve().parent
 DATA_PATH = ROOT / 'data' / 'kolkata_weather_jan_june_2026.csv'
+# Kompatibel dengan repository GitHub lama: CSV berada di direktori utama.
+if not DATA_PATH.exists():
+    DATA_PATH = ROOT / 'kolkata_weather_jan_june_2026.csv'
 OUT = ROOT / 'outputs'
 FIG = ROOT / 'figures'
 NUMERIC = [
